@@ -12,12 +12,14 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.get
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import org.springframework.test.web.servlet.patch
+import org.springframework.test.web.servlet.post
+import org.springframework.test.web.servlet.put
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 
 class UserControllerTest : BaseRestTest() {
-
 
     @BeforeEach
     fun clearDB() {
@@ -33,7 +35,7 @@ class UserControllerTest : BaseRestTest() {
                 AppUser("fabiogiunchi", "dsndja", "Fabio", "Giunchi", "mail@mail.com")
             )
         )
-        this.mockMvc.get("${ApiUrls.USERS}/page/0/size/10")
+        mockMvc.get("${ApiUrls.USERS}/page/0/size/10")
             .andExpect { status { isOk() } }
             .andExpect { jsonPath("$.content.length()", `is`(3)) }
     }
@@ -41,7 +43,7 @@ class UserControllerTest : BaseRestTest() {
     @Test
     fun `Should get a user given its id`() {
         val user = this.userDAO.save(AppUser("giggi", "ddnsakjn", "Gianni", "Riccio", "mail@mail.com"))
-        this.mockMvc.get("${ApiUrls.USERS}/${user.id}")
+        mockMvc.get("${ApiUrls.USERS}/${user.id}")
             .andExpect { status { isOk() } }
             .andExpect { jsonPath("$.username", `is`(user.username)) }
             .andExpect { jsonPath("$.name", `is`(user.name)) }
@@ -50,7 +52,7 @@ class UserControllerTest : BaseRestTest() {
 
     @Test
     fun `Should not get a user if it does not exist`() {
-        this.mockMvc.get("${ApiUrls.USERS}/-1")
+        mockMvc.get("${ApiUrls.USERS}/-1")
             .andExpect { status { isNotFound() } }
             .andExpect { jsonPath("$.message", `is`("AppUser #-1 not found")) }
     }
@@ -58,26 +60,24 @@ class UserControllerTest : BaseRestTest() {
     @Test
     fun `Should create a user`() {
         val user = UserDTOInput("giggi", "ddnsakjn", "", "", "mail@mail.com", UserType.ADMINISTRATOR)
-        mockMvc.perform(
-            post(ApiUrls.USERS)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json(user))
-        )
-            .andExpect(MockMvcResultMatchers.status().isCreated)
-            .andExpect(MockMvcResultMatchers.jsonPath("$.username", `is`(user.username)))
-            .andDo(MockMvcResultHandlers.print())
+        mockMvc.post(ApiUrls.USERS)
+        {
+            contentType = MediaType.APPLICATION_JSON
+            content = json(user)
+        }
+            .andExpect { status { isCreated() } }
+            .andExpect { jsonPath("$.username", `is`(user.username)) }
     }
 
     @Test
     fun `Should not create a user if its username already exists`() {
         val user = this.createMockUser("gab", "aaaa")
-        mockMvc.perform(
-            post(ApiUrls.USERS)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json(UserDTOInput(user)))
-        )
-            .andExpect(MockMvcResultMatchers.status().isConflict)
-            .andDo(MockMvcResultHandlers.print())
+        mockMvc.post(ApiUrls.USERS)
+        {
+            contentType = MediaType.APPLICATION_JSON
+            content = json(UserDTOInput(user))
+        }
+            .andExpect { status { isConflict() } }
     }
 
     @Test
@@ -94,16 +94,15 @@ class UserControllerTest : BaseRestTest() {
             type = UserType.ADMINISTRATOR
         )
 
-        mockMvc.perform(
-            put("${ApiUrls.USERS}/${existing.id}")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json(modified))
-        )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.jsonPath("$.name", `is`(modified.name)))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.surname", `is`(modified.surname)))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.email", `is`(modified.email)))
-            .andDo(MockMvcResultHandlers.print())
+        mockMvc.put("${ApiUrls.USERS}/${existing.id}")
+        {
+            contentType = MediaType.APPLICATION_JSON
+            content = json(modified)
+        }
+            .andExpect { status { isOk() } }
+            .andExpect { jsonPath("$.name", `is`(modified.name)) }
+            .andExpect { jsonPath("$.surname", `is`(modified.surname)) }
+            .andExpect { jsonPath("$.email", `is`(modified.email)) }
 
         val result = this.userDAO.findById(existing.id).get()
         Assertions.assertThat(result.active).isFalse()
@@ -116,14 +115,15 @@ class UserControllerTest : BaseRestTest() {
             "username", "password", "User", "Surname",
             "newmail", isActive = false, type = UserType.ADMINISTRATOR
         )
-        mockMvc.perform(
-            put("${ApiUrls.USERS}/-1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json(modified))
-        )
-            .andExpect(MockMvcResultMatchers.status().isNotFound)
-            .andExpect(MockMvcResultMatchers.jsonPath("$.message", `is`("AppUser #-1 not found")))
-            .andDo(MockMvcResultHandlers.print())
+
+        mockMvc.put("${ApiUrls.USERS}/-1")
+        {
+            contentType = MediaType.APPLICATION_JSON
+            content = json(modified)
+        }
+            .andExpect { status { isNotFound() } }
+            .andExpect { jsonPath("$.message", `is`("AppUser #-1 not found")) }
+
     }
 
     @Test
@@ -157,23 +157,17 @@ class UserControllerTest : BaseRestTest() {
         mockMvc.get("${ApiUrls.USERS}/me")
             .andExpect { status { isOk() } }
 
-        mockMvc.perform(
-            patch("${ApiUrls.USERS}/${user.id}/active/false")
-                .contentType(MediaType.APPLICATION_JSON)
-        ).andExpect(MockMvcResultMatchers.status().isOk)
+        mockMvc.patch("${ApiUrls.USERS}/${user.id}/active/false")
+            .andExpect { status { isOk() } }
 
         Assertions.assertThat(this.userDAO.findByUsername(user.username)?.active).isFalse()
     }
 
     @Test
     fun `Should not deactivate a user if it does not exist`() {
-        mockMvc.perform(
-            patch("${ApiUrls.USERS}/-1/active/false")
-                .contentType(MediaType.APPLICATION_JSON)
-        )
-            .andExpect(MockMvcResultMatchers.status().isNotFound)
-            .andExpect(MockMvcResultMatchers.jsonPath("$.message", `is`("AppUser #-1 not found")))
-            .andDo(MockMvcResultHandlers.print())
+        mockMvc.patch("${ApiUrls.USERS}/-1/active/false")
+            .andExpect { status { isNotFound() } }
+            .andExpect { jsonPath("$.message", `is`("AppUser #-1 not found")) }
     }
 
     /************************************** ME ************************************************************************/
@@ -182,17 +176,13 @@ class UserControllerTest : BaseRestTest() {
     fun `Should get the logged user`() {
         this.userDAO.deleteAll()
         val user = this.createMockUser("gabrigiunchi")
-        mockMvc.perform(
-            get("${ApiUrls.USERS}/me")
-                .contentType(MediaType.APPLICATION_JSON)
-        )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andExpect(MockMvcResultMatchers.jsonPath("$.id", `is`(user.id)))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.name", `is`(user.name)))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.surname", `is`(user.surname)))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.username", `is`(user.username)))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.email", `is`(user.email)))
-            .andDo(MockMvcResultHandlers.print())
+        mockMvc.get("${ApiUrls.USERS}/me")
+            .andExpect { status { isOk() } }
+            .andExpect { jsonPath("$.id", `is`(user.id)) }
+            .andExpect { jsonPath("$.name", `is`(user.name)) }
+            .andExpect { jsonPath("$.surname", `is`(user.surname)) }
+            .andExpect { jsonPath("$.username", `is`(user.username)) }
+            .andExpect { jsonPath("$.email", `is`(user.email)) }
     }
 
     @Test
@@ -201,13 +191,11 @@ class UserControllerTest : BaseRestTest() {
         val user = this.createMockUser("gabrigiunchi", "aaaa")
         val oldPassword = user.password
         val dto = ChangePasswordDTO("aaaa", "bbbb")
-        mockMvc.perform(
-            patch("${ApiUrls.USERS}/me/password")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json(dto))
-        )
-            .andExpect(MockMvcResultMatchers.status().isOk)
-            .andDo(MockMvcResultHandlers.print())
+        mockMvc.patch("${ApiUrls.USERS}/me/password")
+        {
+            contentType = MediaType.APPLICATION_JSON
+            content = json(dto)
+        }.andExpect { status { isOk() } }
 
         val result = this.userDAO.findById(user.id).get()
         Assertions.assertThat(oldPassword).isNotEqualTo(result.password)
@@ -219,14 +207,13 @@ class UserControllerTest : BaseRestTest() {
         val user = this.createMockUser("gabrigiunchi")
         val oldPassword = user.password
         val dto = ChangePasswordDTO("acvd", "bbbb")
-        mockMvc.perform(
-            patch("${ApiUrls.USERS}/me/password")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json(dto))
-        )
-            .andExpect(MockMvcResultMatchers.status().isBadRequest)
-            .andExpect(MockMvcResultMatchers.jsonPath("$.message", `is`("Old password is incorrect")))
-            .andDo(MockMvcResultHandlers.print())
+        mockMvc.patch("${ApiUrls.USERS}/me/password")
+        {
+            contentType = MediaType.APPLICATION_JSON
+            content = json(dto)
+        }
+            .andExpect { status { isBadRequest() } }
+            .andExpect { jsonPath("$.message", `is`("Old password is incorrect")) }
 
         val result = this.userDAO.findById(user.id).get()
         Assertions.assertThat(oldPassword).isEqualTo(result.password)
