@@ -1,6 +1,6 @@
 package com.micellaneous.recipeak.config.security
 
-import com.micellaneous.recipeak.UserDAO
+import com.micellaneous.recipeak.dao.UserDAO
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException

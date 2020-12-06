@@ -1,6 +1,6 @@
 package com.micellaneous.recipeak.controller
 
-import com.micellaneous.recipeak.UserDAO
+import com.micellaneous.recipeak.dao.UserDAO
 import com.micellaneous.recipeak.model.AppUser
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.ResponseEntity

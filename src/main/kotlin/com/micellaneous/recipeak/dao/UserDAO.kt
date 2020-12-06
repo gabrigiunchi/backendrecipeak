@@ -1,4 +1,4 @@
-package com.micellaneous.recipeak
+package com.micellaneous.recipeak.dao
 
 import com.micellaneous.recipeak.model.AppUser
 import org.springframework.data.repository.PagingAndSortingRepository

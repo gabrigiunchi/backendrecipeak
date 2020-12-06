@@ -1,5 +1,6 @@
 package com.micellaneous.recipeak
 
+import com.micellaneous.recipeak.dao.UserDAO
 import com.micellaneous.recipeak.model.AppUser
 import com.micellaneous.recipeak.model.enum.UserType
 import org.springframework.beans.factory.annotation.Autowired

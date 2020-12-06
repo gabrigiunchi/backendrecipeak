@@ -1,6 +1,6 @@
 package com.micellaneous.recipeak.controller
 
-import com.micellaneous.recipeak.UserDAO
+import com.micellaneous.recipeak.dao.UserDAO
 import com.micellaneous.recipeak.model.AppUser
 import com.micellaneous.recipeak.model.enum.UserType
 import org.springframework.security.core.context.SecurityContextHolder
