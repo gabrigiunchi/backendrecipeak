@@ -1,0 +1,18 @@
+version: 0.0.1
+application:
+  initDB: true
+security:
+  jwt:
+    token:
+      expireHours: 1460
+      secret-key: dnsjndajksnjxnsajn6786
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: gabrigiunchi
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create
