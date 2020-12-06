@@ -60,7 +60,6 @@ class UserService(private val userDAO: UserDAO) {
             !this.checkPassword(user, credentials.password) ||
             !user.active
         ) {
-
             throw BadCredentialsException("Invalid username/password supplied")
         }
 
