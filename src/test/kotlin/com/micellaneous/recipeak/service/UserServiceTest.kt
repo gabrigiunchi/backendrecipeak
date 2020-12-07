@@ -37,6 +37,11 @@ class UserServiceTest : BaseTest() {
         val user = this.createMockUser("gabriginchi")
         val result = this.userService.getUser(user.id)
         assertThat(result).isEqualTo(user)
+
+        val exception = assertThrows<ResourceNotFoundException> {
+            this.userService.getUser(-1)
+        }
+        assertThat(exception.message).isEqualTo("AppUser #-1 not found")
     }
 
     @Test
@@ -66,6 +71,44 @@ class UserServiceTest : BaseTest() {
             this.userService.authenticate(ValidateUserDTO("gabrigiunchi", "dasdas"))
         }
         assertThat(exception.message).isEqualTo("Invalid username/password supplied")
+    }
+
+    @Test
+    fun `Should NOT authenticate a disabled user`() {
+        this.createMockUser("gabrigiunchi", active = false)
+        val exception: BadCredentialsException = assertThrows {
+            this.userService.authenticate(ValidateUserDTO("gabrigiunchi", "aaaa"))
+        }
+        assertThat(exception.message).isEqualTo("Invalid username/password supplied")
+    }
+
+    @Test
+    fun `Should NOT authenticate an expired user`() {
+        this.createMockUser(
+            "gabrigiunchi",
+            validFrom = OffsetDateTime.now().minusDays(10),
+            expireDate = OffsetDateTime.now().minusDays(1)
+        )
+        val exception: BadCredentialsException = assertThrows {
+            this.userService.authenticate(ValidateUserDTO("gabrigiunchi", "aaaa"))
+        }
+        assertThat(exception.message).isEqualTo("Invalid username/password supplied")
+    }
+
+    @Test
+    fun `Should say if a user is valid or not`() {
+        var user = this.createMockUser("user1")
+        assertThat(this.userService.isUserValid(user)).isTrue()
+
+        user = this.createMockUser("user2", active = false)
+        assertThat(this.userService.isUserValid(user)).isFalse()
+
+        user = this.createMockUser(
+            "user3",
+            validFrom = OffsetDateTime.MIN,
+            expireDate = OffsetDateTime.now().minusDays(1)
+        )
+        assertThat(this.userService.isUserValid(user)).isFalse()
     }
 
     @Test

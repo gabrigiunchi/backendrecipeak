@@ -10,6 +10,7 @@ import com.micellaneous.recipeak.model.dto.input.ValidateUserDTO
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
+import java.time.OffsetDateTime
 
 @Service
 class UserService(private val userDAO: UserDAO) {
@@ -58,12 +59,16 @@ class UserService(private val userDAO: UserDAO) {
         if (
             user == null ||
             !this.checkPassword(user, credentials.password) ||
-            !user.active
+            !this.isUserValid(user)
         ) {
             throw BadCredentialsException("Invalid username/password supplied")
         }
 
         return user
+    }
+
+    fun isUserValid(user: AppUser): Boolean {
+        return user.active && OffsetDateTime.now() in user.validFrom..user.expireDate
     }
 
     fun checkPassword(user: AppUser, password: String): Boolean =
