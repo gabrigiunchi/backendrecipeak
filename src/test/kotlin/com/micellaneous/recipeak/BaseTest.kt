@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.test.context.ActiveProfiles
+import java.time.OffsetDateTime
 import javax.transaction.Transactional
 
 @Transactional
@@ -23,7 +24,9 @@ class BaseTest {
         type: UserType = UserType.ADMINISTRATOR,
         name: String = "aaaa",
         surname: String = "bbbb",
-        active: Boolean = true
+        active: Boolean = true,
+        validFrom: OffsetDateTime = OffsetDateTime.now(),
+        expireDate: OffsetDateTime = OffsetDateTime.MAX
     ): AppUser {
         val user = AppUser(
             username = username,
@@ -31,7 +34,10 @@ class BaseTest {
             name = name,
             surname = surname,
             email = "",
-            type = type
+            type = type,
+            validFrom = validFrom,
+            expireDate = expireDate,
+            id = -1
         )
         user.active = active
         return this.userDAO.save(user)

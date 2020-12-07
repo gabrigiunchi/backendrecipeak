@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Component
+import java.time.Duration
 import java.util.*
 import javax.servlet.http.HttpServletRequest
 
@@ -22,17 +23,21 @@ class JwtTokenProvider(private val userDetailsService: AppUserDetailsService) {
     @Value("\${security.jwt.token.expireHours}")
     private val validityInHours: Long = 0
 
-    fun createToken(user: AppUser) = this.createToken(user.username, listOf(user.type.name))
+    fun createToken(user: AppUser, validity: Duration = Duration.ofHours(validityInHours)) =
+        this.createToken(user.username, listOf(user.type.name), validity)
 
-    fun createToken(username: String, roles: List<String>): String {
+    fun createToken(
+        username: String,
+        roles: List<String>,
+        validity: Duration = Duration.ofHours(validityInHours)
+    ): String {
         val claims = Jwts.claims().setSubject(username)
         claims["roles"] = roles
         val now = Date()
-        val validity = Date(now.time + validityInHours * 60 * 60 * 1000)
         return Jwts.builder()
             .setClaims(claims)
             .setIssuedAt(now)
-            .setExpiration(validity)
+            .setExpiration(Date(now.time + validity.toMillis()))
             .signWith(SignatureAlgorithm.HS256, secretKey)
             .compact()
     }

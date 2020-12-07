@@ -32,7 +32,6 @@ class AppUser(
                 OffsetDateTime.now().plusYears(1000)
             )
 
-
     constructor(username: String, password: String, name: String, surname: String, email: String) :
             this(username, password, name, surname, email, UserType.USER)
 

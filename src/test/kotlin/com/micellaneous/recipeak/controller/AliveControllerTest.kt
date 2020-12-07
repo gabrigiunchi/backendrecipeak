@@ -4,6 +4,7 @@ import com.micellaneous.recipeak.BaseRestTest
 import com.micellaneous.recipeak.config.security.JwtTokenProvider
 import com.micellaneous.recipeak.constants.ApiUrls
 import com.micellaneous.recipeak.model.enum.UserType
+import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -12,6 +13,8 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.security.test.context.support.WithAnonymousUser
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.get
+import java.time.Duration
+import java.time.OffsetDateTime
 
 @SpringBootTest
 class AliveControllerTest : BaseRestTest() {
@@ -22,7 +25,6 @@ class AliveControllerTest : BaseRestTest() {
     @BeforeEach
     fun clear() {
         this.userDAO.deleteAll()
-        this.userDAO.count()
         this.createMockUser("gabrigiunchi")
     }
 
@@ -35,7 +37,7 @@ class AliveControllerTest : BaseRestTest() {
 
     @Test
     @WithAnonymousUser
-    fun `Should allow the user with a valid token to access secured endpoints`() {
+    fun `Should allow users with a valid token to access secured endpoints`() {
         val user = this.createMockUser("baseuser", "bbbb", UserType.ADMINISTRATOR)
         val token = this.jwtTokenProvider.createToken(user)
         mockMvc.get("${ApiUrls.ALIVE}/secured")
@@ -46,7 +48,7 @@ class AliveControllerTest : BaseRestTest() {
 
     @Test
     @WithAnonymousUser
-    fun `Should forbid a user with invalid token to access secured endpoints`() {
+    fun `Should forbid users with invalid token to access secured endpoints`() {
         mockMvc.get("${ApiUrls.ALIVE}/secured")
         {
             header("Authorization", "Bearer dajshjkd")
@@ -55,8 +57,36 @@ class AliveControllerTest : BaseRestTest() {
 
     @Test
     @WithAnonymousUser
-    fun `Should forbid a disabled users to access secured endpoints`() {
+    fun `Should forbid users with expired token to access secured endpoints`() {
+        val user = this.createMockUser("akdjasd")
+        val token = this.jwtTokenProvider.createToken(user, Duration.ofHours(-10))
+        assertThat(this.jwtTokenProvider.validateToken(token)).isFalse()
+        mockMvc.get("${ApiUrls.ALIVE}/secured")
+        {
+            header("Authorization", "Bearer $token")
+        }.andExpect { status { isForbidden() } }
+    }
+
+    @Test
+    @WithAnonymousUser
+    fun `Should forbid disabled users to access secured endpoints`() {
         val user = this.createMockUser("akdjasd", active = false)
+        val token = this.jwtTokenProvider.createToken(user)
+        mockMvc.get("${ApiUrls.ALIVE}/secured")
+        {
+            header("Authorization", "Bearer $token")
+        }.andExpect { status { isForbidden() } }
+    }
+
+    @Test
+    @WithAnonymousUser
+    fun `Should forbid expired users to access secured endpoints`() {
+        val user = this.createMockUser(
+            "akdjasd",
+            active = false,
+            validFrom = OffsetDateTime.now().minusDays(10),
+            expireDate = OffsetDateTime.now().minusDays(1)
+        )
         val token = this.jwtTokenProvider.createToken(user)
         mockMvc.get("${ApiUrls.ALIVE}/secured")
         {
