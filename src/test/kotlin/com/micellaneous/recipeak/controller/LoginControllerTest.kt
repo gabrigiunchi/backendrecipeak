@@ -112,11 +112,17 @@ class LoginControllerTest : BaseRestTest() {
     fun `Should not log in a disabled user`() {
         val password = "aaaa"
         val user = this.createMockUser("fasfassd", password)
-        user.active = false
-        this.userDAO.save(user)
-
         val credentials = ValidateUserDTO(user.username, password)
 
+        mockMvc.post(ApiUrls.LOGIN)
+        {
+            contentType = MediaType.APPLICATION_JSON
+            content = json(credentials)
+        }
+            .andExpect { status { isOk() } }
+
+        user.active = false
+        this.userDAO.save(user)
         mockMvc.post(ApiUrls.LOGIN)
         {
             contentType = MediaType.APPLICATION_JSON

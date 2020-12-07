@@ -25,7 +25,7 @@ class AppUserDetails(val user: AppUser) : UserDetails {
     }
 
     override fun isAccountNonLocked(): Boolean {
-        return true
+        return user.active
     }
 
     override fun isCredentialsNonExpired(): Boolean {

@@ -1,17 +1,22 @@
 package com.micellaneous.recipeak.controller
 
 import com.micellaneous.recipeak.BaseRestTest
+import com.micellaneous.recipeak.config.security.JwtTokenProvider
 import com.micellaneous.recipeak.constants.ApiUrls
 import com.micellaneous.recipeak.model.enum.UserType
 import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.get
 
 @SpringBootTest
 class AliveControllerTest : BaseRestTest() {
+
+    @Autowired
+    private lateinit var jwtTokenProvider: JwtTokenProvider
 
     @BeforeEach
     fun clear() {

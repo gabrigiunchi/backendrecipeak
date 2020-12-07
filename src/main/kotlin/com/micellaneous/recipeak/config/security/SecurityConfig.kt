@@ -27,7 +27,7 @@ class SecurityConfig(
         "/webjars/**",
         "_ah/**",
         ApiUrls.LOGIN,
-        ApiUrls.LOGIN + "/token",
+        "${ApiUrls.LOGIN}/token",
         ApiUrls.ALIVE
     )
 

@@ -1,6 +1,5 @@
 package com.micellaneous.recipeak.config.security
 
-import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.filter.GenericFilterBean
 import java.io.IOException
@@ -16,8 +15,7 @@ class JwtTokenFilter(private val jwtTokenProvider: JwtTokenProvider) : GenericFi
     override fun doFilter(req: ServletRequest?, res: ServletResponse?, filterChain: FilterChain) {
         val token: String? = jwtTokenProvider.resolveToken(req as HttpServletRequest)
         if (token != null && jwtTokenProvider.validateToken(token)) {
-            val auth: Authentication? = jwtTokenProvider.getAuthentication(token)
-            SecurityContextHolder.getContext().authentication = auth
+            SecurityContextHolder.getContext().authentication = jwtTokenProvider.getAuthentication(token)
         }
         filterChain.doFilter(req, res)
     }
