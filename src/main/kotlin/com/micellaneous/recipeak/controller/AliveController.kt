@@ -21,6 +21,11 @@ class AliveController(userDAO: UserDAO) : BaseController(userDAO) {
         return ResponseEntity.ok(mapOf("version" to this.version))
     }
 
+    @GetMapping("/secured")
+    fun secured(): ResponseEntity<Map<String, String>> {
+        return ResponseEntity.ok(mapOf("message" to "greetings! this is a secured endpoint"))
+    }
+
     @GetMapping("/me")
     fun whoAmI(): ResponseEntity<AppUser> = ResponseEntity.ok(this.getLoggedUser())
 

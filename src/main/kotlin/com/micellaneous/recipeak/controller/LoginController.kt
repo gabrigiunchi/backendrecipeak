@@ -1,7 +1,6 @@
 package com.micellaneous.recipeak.controller
 
 import com.micellaneous.recipeak.config.security.JwtTokenProvider
-import com.micellaneous.recipeak.exception.AccessDeniedException
 import com.micellaneous.recipeak.model.dto.input.ValidateTokenRequest
 import com.micellaneous.recipeak.model.dto.input.ValidateUserDTO
 import com.micellaneous.recipeak.model.dto.output.Token
@@ -26,22 +25,15 @@ class LoginController(private val userService: UserService, val jwtTokenProvider
     @PostMapping
     fun login(@RequestBody @Validated credentials: ValidateUserDTO): ResponseEntity<Token> {
         this.logger.info("Login request: {username:" + credentials.username + ", password:" + credentials.password + "}")
-
         val user = this.userService.authenticate(credentials)
         val token = this.jwtTokenProvider.createToken(user.username, listOf(user.type.name))
-
         return ResponseEntity.ok(Token(UserDTOOutput(user), token))
     }
 
     @PostMapping("/token")
     fun loginWithToken(@RequestBody request: ValidateTokenRequest): ResponseEntity<TokenLoginResponse> {
         this.logger.info("Login with token")
-        val valid = try {
-            this.jwtTokenProvider.validateToken(request.token)
-        } catch (e: AccessDeniedException) {
-            false
-        }
-
+        val valid = this.jwtTokenProvider.validateToken(request.token)
         return ResponseEntity.ok(TokenLoginResponse(valid))
     }
 }

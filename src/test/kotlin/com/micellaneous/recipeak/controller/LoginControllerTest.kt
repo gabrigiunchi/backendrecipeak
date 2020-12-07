@@ -6,7 +6,6 @@ import com.micellaneous.recipeak.config.security.JwtTokenProvider
 import com.micellaneous.recipeak.constants.ApiUrls
 import com.micellaneous.recipeak.model.dto.input.ValidateTokenRequest
 import com.micellaneous.recipeak.model.dto.input.ValidateUserDTO
-import com.micellaneous.recipeak.model.enum.UserType
 import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.Matchers.`is`
 import org.hamcrest.Matchers.notNullValue
@@ -85,7 +84,7 @@ class LoginControllerTest : BaseRestTest() {
     fun `Should say if a token is valid`() {
         val user = this.createMockUser("gabrigiunchi", "aaaa")
         this.userDAO.save(user)
-        val token = this.tokenProvider.createToken(user.username, listOf(UserType.ADMINISTRATOR.name))
+        val token = this.tokenProvider.createToken(user)
 
         mockMvc.post("${ApiUrls.LOGIN}/token")
         {

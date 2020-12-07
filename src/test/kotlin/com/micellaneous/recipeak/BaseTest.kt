@@ -22,16 +22,18 @@ class BaseTest {
         password: String = "aaaa",
         type: UserType = UserType.ADMINISTRATOR,
         name: String = "aaaa",
-        surname: String = "bbbb"
-    ): AppUser =
-        this.userDAO.save(
-            AppUser(
-                username,
-                BCryptPasswordEncoder().encode(password),
-                name,
-                surname,
-                "",
-                type
-            )
+        surname: String = "bbbb",
+        active: Boolean = true
+    ): AppUser {
+        val user = AppUser(
+            username = username,
+            password = BCryptPasswordEncoder().encode(password),
+            name = name,
+            surname = surname,
+            email = "",
+            type = type
         )
+        user.active = active
+        return this.userDAO.save(user)
+    }
 }

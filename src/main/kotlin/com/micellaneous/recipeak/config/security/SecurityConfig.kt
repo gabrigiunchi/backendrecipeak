@@ -44,6 +44,7 @@ class SecurityConfig(
             .anyRequest().authenticated()
             .and()
             .addFilterBefore(JwtTokenFilter(this.jwtTokenProvider), UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(UserValiditySecurityFilter(), UsernamePasswordAuthenticationFilter::class.java)
     }
 
     @Throws(Exception::class)

@@ -1,9 +1,13 @@
 package com.micellaneous.recipeak.config.security
 
-import com.micellaneous.recipeak.exception.AccessDeniedException
-import io.jsonwebtoken.*
+
+import com.micellaneous.recipeak.model.AppUser
+import io.jsonwebtoken.Claims
+import io.jsonwebtoken.Jws
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.SignatureAlgorithm
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.security.authentication.AnonymousAuthenticationToken
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.Authentication
 import org.springframework.stereotype.Component
 import java.util.*
@@ -17,6 +21,8 @@ class JwtTokenProvider(private val userDetailsService: AppUserDetailsService) {
 
     @Value("\${security.jwt.token.expireHours}")
     private val validityInHours: Long = 0
+
+    fun createToken(user: AppUser) = this.createToken(user.username, listOf(user.type.name))
 
     fun createToken(username: String, roles: List<String>): String {
         val claims = Jwts.claims().setSubject(username)
@@ -33,7 +39,7 @@ class JwtTokenProvider(private val userDetailsService: AppUserDetailsService) {
 
     fun getAuthentication(token: String): Authentication {
         val userDetails = userDetailsService.loadUserByUsername(getUsername(token))
-        return AnonymousAuthenticationToken(token, userDetails, userDetails.authorities)
+        return UsernamePasswordAuthenticationToken(userDetails, "", userDetails.authorities)
     }
 
     fun getUsername(token: String): String {
@@ -50,11 +56,9 @@ class JwtTokenProvider(private val userDetailsService: AppUserDetailsService) {
     fun validateToken(token: String): Boolean {
         return try {
             val claims: Jws<Claims> = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token)
-            !claims.body.expiration.before(Date())
-        } catch (e: JwtException) {
-            throw AccessDeniedException("Expired or invalid JWT token")
-        } catch (e: IllegalArgumentException) {
-            throw AccessDeniedException("Expired or invalid JWT token")
+            claims.body.expiration > Date()
+        } catch (e: Exception) {
+            false
         }
     }
 }
