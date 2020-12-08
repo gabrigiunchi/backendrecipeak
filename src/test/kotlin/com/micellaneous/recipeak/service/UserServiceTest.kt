@@ -26,6 +26,20 @@ class UserServiceTest : BaseTest() {
     }
 
     @Test
+    fun `Should get a page of users`() {
+        val users = (1..10).map { this.createMockUser("user$it") }.toList()
+
+        var result = this.userService.getUsersPaged(0, 2)
+        assertThat(result.content.toList()).isEqualTo(users.take(2))
+
+        result = this.userService.getUsersPaged(2, 3)
+        assertThat(result.content.toList()).isEqualTo(listOf(users[6], users[7], users[8]))
+
+        result = this.userService.getUsersPaged(0, 20)
+        assertThat(result.content.toList()).isEqualTo(users)
+    }
+
+    @Test
     fun `Should get a user by username`() {
         val user = this.createMockUser("gabrigiunchi")
         val result = this.userService.getUser("gabrigiunchi")

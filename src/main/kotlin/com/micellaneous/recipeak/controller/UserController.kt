@@ -10,7 +10,6 @@ import com.micellaneous.recipeak.model.dto.output.UserDTOOutput
 import com.micellaneous.recipeak.service.UserService
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -24,9 +23,10 @@ class UserController(private val userDAO: UserDAO, private val userService: User
     val logger = LoggerFactory.getLogger(UserController::class.java)!!
 
     @GetMapping("/page/{page}/size/{size}")
+    @PreAuthorize("hasAuthority('ADMINISTRATOR')")
     fun getAllUsers(@PathVariable page: Int, @PathVariable size: Int): ResponseEntity<Page<UserDTOOutput>> {
         this.logger.info("GET all users, page=$page size=$size")
-        return ResponseEntity.ok(this.userDAO.findAll(PageRequest.of(page, size)).map { e -> UserDTOOutput(e) })
+        return ResponseEntity.ok(this.userService.getUsersPaged(page, size).map { e -> UserDTOOutput(e) })
     }
 
     @GetMapping("/{id}")
