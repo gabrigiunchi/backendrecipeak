@@ -1,6 +1,6 @@
 package com.micellaneous.recipeak.controller
 
-import com.micellaneous.recipeak.config.security.JwtTokenProvider
+import com.micellaneous.recipeak.config.security.service.JwtTokenProvider
 import com.micellaneous.recipeak.model.dto.input.ValidateTokenRequest
 import com.micellaneous.recipeak.model.dto.input.ValidateUserDTO
 import com.micellaneous.recipeak.model.dto.output.Token

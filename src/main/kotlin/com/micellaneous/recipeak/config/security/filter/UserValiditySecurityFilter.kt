@@ -1,4 +1,4 @@
-package com.micellaneous.recipeak.config.security
+package com.micellaneous.recipeak.config.security.filter
 
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder

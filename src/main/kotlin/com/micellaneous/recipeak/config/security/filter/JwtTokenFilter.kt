@@ -1,5 +1,6 @@
-package com.micellaneous.recipeak.config.security
+package com.micellaneous.recipeak.config.security.filter
 
+import com.micellaneous.recipeak.config.security.service.JwtTokenProvider
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.filter.GenericFilterBean
 import java.io.IOException

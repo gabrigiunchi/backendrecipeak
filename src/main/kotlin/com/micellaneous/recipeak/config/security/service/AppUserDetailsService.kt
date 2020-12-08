@@ -1,12 +1,13 @@
-package com.micellaneous.recipeak.config.security
+package com.micellaneous.recipeak.config.security.service
 
+import com.micellaneous.recipeak.config.security.AppUserDetails
 import com.micellaneous.recipeak.dao.UserDAO
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException
-import org.springframework.stereotype.Component
+import org.springframework.stereotype.Service
 
-@Component
+@Service
 class AppUserDetailsService(private val users: UserDAO) : UserDetailsService {
 
     @Throws(UsernameNotFoundException::class)
