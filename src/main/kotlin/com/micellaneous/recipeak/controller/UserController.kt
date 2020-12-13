@@ -76,20 +76,13 @@ class UserController(private val userDAO: UserDAO, private val userService: User
         return ResponseEntity(HttpStatus.OK)
     }
 
-    /*************************************** ME ********************************************************************/
-
-    @GetMapping("/me")
-    fun getMyDetails(): ResponseEntity<UserDTOOutput> {
-        val loggedUser = this.getLoggedUser()
-        this.logger.info("GET logged user (#${loggedUser.id})")
-        return ResponseEntity.ok(UserDTOOutput(loggedUser))
-    }
-
-
-    @PatchMapping("/me/password")
-    fun changeMyPassword(@Validated @RequestBody dto: ChangePasswordDTO): ResponseEntity<UserDTOOutput> {
-        val user = this.getLoggedUser()
-        this.logger.info("POST to change password of #${user.id}")
-        return ResponseEntity.ok(UserDTOOutput(this.userService.modifyPasswordOfUser(user, dto)))
+    @PatchMapping("/{id}/password")
+    fun changeUserPassword(
+        @PathVariable id: Int,
+        @Validated @RequestBody dto: ChangePasswordDTO
+    ): ResponseEntity<UserDTOOutput> {
+        this.logger.info("POST to change password of #${id}")
+        this.applyUserInfoProtection(id)
+        return ResponseEntity.ok(UserDTOOutput(this.userService.modifyPasswordOfUser(id, dto)))
     }
 }

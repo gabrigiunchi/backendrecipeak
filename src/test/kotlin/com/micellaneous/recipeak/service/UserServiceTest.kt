@@ -135,8 +135,16 @@ class UserServiceTest : BaseTest() {
     @Test
     fun `Should modify the password of a user`() {
         val user = this.createMockUser("gabrigiunchi")
-        this.userService.modifyPasswordOfUser(user, ChangePasswordDTO("aaaa", "bbbb"))
+        this.userService.modifyPasswordOfUser(user.id, ChangePasswordDTO("aaaa", "bbbb"))
         assertThat(this.userService.checkPassword(user, "bbbb")).isTrue()
+    }
+
+    @Test
+    fun `Should not modify the password of a user which doesn't exist`() {
+        val exception = assertThrows<ResourceNotFoundException> {
+            this.userService.modifyPasswordOfUser(-1, ChangePasswordDTO("aaaa", "bbbb"))
+        }
+        assertThat(exception.message).isEqualTo("AppUser #-1 not found")
     }
 
     @Test

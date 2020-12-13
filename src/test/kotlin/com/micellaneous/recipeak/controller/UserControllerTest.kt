@@ -11,6 +11,7 @@ import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.http.MediaType
+import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.patch
 import org.springframework.test.web.servlet.post
@@ -150,11 +151,10 @@ class UserControllerTest : BaseRestTest() {
 
     @Test
     fun `Should deactivate a user`() {
-        this.userDAO.deleteAll()
         val user = this.createMockUser("gabrigiunchi")
         Assertions.assertThat(user.active).isTrue()
 
-        mockMvc.get("${ApiUrls.USERS}/me")
+        mockMvc.get("${ApiUrls.USERS}/${user.id}")
             .andExpect { status { isOk() } }
 
         mockMvc.patch("${ApiUrls.USERS}/${user.id}/active/false")
@@ -170,28 +170,12 @@ class UserControllerTest : BaseRestTest() {
             .andExpect { jsonPath("$.message", `is`("AppUser #-1 not found")) }
     }
 
-    /************************************** ME ************************************************************************/
-
     @Test
-    fun `Should get the logged user`() {
-        this.userDAO.deleteAll()
-        val user = this.createMockUser("gabrigiunchi")
-        mockMvc.get("${ApiUrls.USERS}/me")
-            .andExpect { status { isOk() } }
-            .andExpect { jsonPath("$.id", `is`(user.id)) }
-            .andExpect { jsonPath("$.name", `is`(user.name)) }
-            .andExpect { jsonPath("$.surname", `is`(user.surname)) }
-            .andExpect { jsonPath("$.username", `is`(user.username)) }
-            .andExpect { jsonPath("$.email", `is`(user.email)) }
-    }
-
-    @Test
-    fun `Should change my password`() {
-        this.userDAO.deleteAll()
+    fun `Should change the password of a user`() {
         val user = this.createMockUser("gabrigiunchi", "aaaa")
         val oldPassword = user.password
         val dto = ChangePasswordDTO("aaaa", "bbbb")
-        mockMvc.patch("${ApiUrls.USERS}/me/password")
+        mockMvc.patch("${ApiUrls.USERS}/${user.id}/password")
         {
             contentType = MediaType.APPLICATION_JSON
             content = json(dto)
@@ -202,18 +186,41 @@ class UserControllerTest : BaseRestTest() {
     }
 
     @Test
-    fun `Should not change my password if the old password is incorrect`() {
-        this.userDAO.deleteAll()
+    fun `Should not change the password if the old password is incorrect`() {
         val user = this.createMockUser("gabrigiunchi")
         val oldPassword = user.password
         val dto = ChangePasswordDTO("acvd", "bbbb")
-        mockMvc.patch("${ApiUrls.USERS}/me/password")
+        mockMvc.patch("${ApiUrls.USERS}/${user.id}/password")
         {
             contentType = MediaType.APPLICATION_JSON
             content = json(dto)
         }
             .andExpect { status { isBadRequest() } }
             .andExpect { jsonPath("$.message", `is`("Old password is incorrect")) }
+
+        val result = this.userDAO.findById(user.id).get()
+        Assertions.assertThat(oldPassword).isEqualTo(result.password)
+    }
+
+    @Test
+    @WithMockUser(username = "baseuser", password = "bbbb", authorities = ["USER"])
+    fun `Should not change the password without the rights`() {
+        this.createMockUser("baseuser", "bbbb", UserType.USER)
+        val user = this.createMockUser("gabrigiunchi")
+        val oldPassword = user.password
+        val dto = ChangePasswordDTO("acvd", "bbbb")
+        mockMvc.patch("${ApiUrls.USERS}/${user.id}/password")
+        {
+            contentType = MediaType.APPLICATION_JSON
+            content = json(dto)
+        }
+            .andExpect { status { isForbidden() } }
+            .andExpect {
+                jsonPath(
+                    "$.message",
+                    `is`("You don't have the rights to access user ${user.id} information")
+                )
+            }
 
         val result = this.userDAO.findById(user.id).get()
         Assertions.assertThat(oldPassword).isEqualTo(result.password)

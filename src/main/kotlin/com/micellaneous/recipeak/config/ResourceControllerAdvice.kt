@@ -1,10 +1,10 @@
 package com.micellaneous.recipeak.config
 
+import com.micellaneous.recipeak.exception.AccessDeniedException
 import com.micellaneous.recipeak.exception.BadRequestException
 import com.micellaneous.recipeak.exception.ResourceAlreadyExistsException
 import com.micellaneous.recipeak.exception.ResourceNotFoundException
 import org.springframework.http.HttpStatus
-import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.annotation.*
 

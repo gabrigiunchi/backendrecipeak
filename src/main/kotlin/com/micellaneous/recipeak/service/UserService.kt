@@ -58,6 +58,11 @@ class UserService(private val userDAO: UserDAO) {
         return this.userDAO.save(savedUser)
     }
 
+    fun modifyPasswordOfUser(userId: Int, dto: ChangePasswordDTO): AppUser {
+        logger.info("Modify password of user $userId")
+        return this.modifyPasswordOfUser(this.getUser(userId), dto)
+    }
+
     fun modifyPasswordOfUser(user: AppUser, dto: ChangePasswordDTO): AppUser {
         logger.info("Modify password of user ${user.username}")
         if (!this.checkPassword(user, dto.oldPassword)) {
